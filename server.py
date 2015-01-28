@@ -10,7 +10,7 @@ app = Flask(__name__)
 TORRENTZ_URL = "http://torrentz.eu"
 
 @app.route('/')
-def index():	
+def index():
 	return "Hello World!"
 
 @app.route('/search/<term>')
@@ -26,7 +26,7 @@ def search(term):
 		try:
 			new_torrent = Torrent()
 			new_torrent.name = item.dt.a.text
-			new_torrent.rel_url = item.dt.a['href']
+			new_torrent.rel_url = item.dt.a['href'].replace('/','')
 
 			age_span = item.dd.find(lambda e: e.name == 'span' and e.has_attr('class') and e['class'] == ['a']).span
 			new_torrent.date_exact = age_span['title']
@@ -34,6 +34,8 @@ def search(term):
 
 			new_torrent.size = item.dd.find(lambda e: e.name == 'span' and e.has_attr('class') and e['class'] == ['s']).text
 			new_torrent.seeders = item.dd.find(lambda e: e.name == 'span' and e.has_attr('class') and e['class'] == ['u']).text
+
+			new_torrent.magnet = magnet(new_torrent.rel_url)
 			torrents.append(new_torrent)
 	
 		except Exception, e:
@@ -45,29 +47,31 @@ def search(term):
 @app.route('/magnet/<rel_url>')
 def magnet(rel_url):
 	""" Returns all source links from which to fetch magnet links form. """
-	req_url = TORRENTZ_URL + "/" + rel_url.replace('/', '')
-	print req_url
+	req_url = TORRENTZ_URL + rel_url
 	link_list_request = requests.get(req_url)
 	link_list_html = BeautifulSoup(link_list_request.text)
 	downloads_div = link_list_html.find(lambda e: e.name == 'div' and e.has_attr('class') and e['class'] == ['download'])
 	for link in downloads_div.find_all('a'):
-		link_href = link['href']
-		if link_href.startswith('http'):
-			magnet_source_request = requests.get(link_href)
-			magnet_source_html = BeautifulSoup(magnet_source_request.text)
-			try:
-				magnet_link = magnet_source_html.find(lambda e: e.name == 'a' and e.has_attr('href') and e['href'].startswith('magnet:?'))
-				return magnet_link
-			except Exception, e:
-				print e
-				continue
-	return None
+		url = link['href']
+		if url.startswith('http'):
+			magnet = get_magnet(url)
+			if magnet:
+				return json.dumps({'magnet':magnet})
+	return json.dumps({'magnet': None})
 
 def create_search_request(search_term, page=0):
 	""" Takes in percent incoded string, e.g: foo%20bar """
 	torrentz_search_url = TORRENTZ_URL + "/search?"
 	params = {"q": urllib.unquote(str(search_term)), "p": page}
 	return requests.get(torrentz_search_url, params=params)
+
+def get_magnet(url):
+	magnet_source_request = requests.get(url)
+	magnet_source_html = BeautifulSoup(magnet_source_request.text)
+	for link in magnet_source_html.find_all('a'):
+		if link.has_attr('href') and link['href'].startswith('magnet:?'):
+			return link['href']
+	return None
 
 if __name__ == '__main__':
 	app.run(debug=True)
