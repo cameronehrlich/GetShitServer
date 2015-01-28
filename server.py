@@ -46,7 +46,8 @@ def search(term):
 @app.route('/magnet/<rel_url>')
 def magnet(rel_url):
 	""" Returns all source links from which to fetch magnet links form. """
-	req_url = TORRENTZ_URL + rel_url
+	req_url = TORRENTZ_URL + "/" + rel_url
+	print req_url
 	link_list_request = requests.get(req_url)
 	link_list_html = BeautifulSoup(link_list_request.text)
 	downloads_div = link_list_html.find(lambda e: e.name == 'div' and e.has_attr('class') and e['class'] == ['download'])
