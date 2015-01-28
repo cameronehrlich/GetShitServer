@@ -35,7 +35,6 @@ def search(term):
 			new_torrent.size = item.dd.find(lambda e: e.name == 'span' and e.has_attr('class') and e['class'] == ['s']).text
 			new_torrent.seeders = item.dd.find(lambda e: e.name == 'span' and e.has_attr('class') and e['class'] == ['u']).text
 
-			new_torrent.magnet = magnet(new_torrent.rel_url)
 			torrents.append(new_torrent)
 	
 		except Exception, e:
