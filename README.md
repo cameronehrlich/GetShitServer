@@ -1,5 +1,5 @@
-# torrentz-api
-A scraper for Torrentz.eu that serves up a JSON API
+# GetShit
+A scraper for Torrentz.eu.
 
 ===
 
