@@ -1,5 +1,5 @@
-# GetShit
-A scraper for Torrentz.eu.
+# GetShitServer
+A scraper for Torrentz.eu that presents the user with a list of magnet links.
 
 ===
 
