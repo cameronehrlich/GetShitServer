@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 import json
 import requests
 import urllib
@@ -11,7 +11,7 @@ TORRENTZ_URL = "http://torrentz.eu"
 
 @app.route('/')
 def index():
-	return "Hello World!"
+	return render_template('index.html')
 
 @app.route('/search/<term>')
 def search(term):
@@ -52,11 +52,14 @@ def magnet(rel_url):
 	link_list_html = BeautifulSoup(link_list_request.text)
 	downloads_div = link_list_html.find(lambda e: e.name == 'div' and e.has_attr('class') and e['class'] == ['download'])
 	for link in downloads_div.find_all('a'):
-		url = link['href']
-		if url.startswith('http'):
-			magnet = get_magnet(url)
-			if magnet:
-				return json.dumps({'magnet':magnet})
+		try:
+			url = link['href']
+			if url.startswith('http'):
+				magnet = get_magnet(url)
+				if magnet:
+					return json.dumps({'magnet':magnet})
+		except Exception:
+			continue
 	return json.dumps({'magnet': None})
 
 def create_search_request(search_term, page=0):
