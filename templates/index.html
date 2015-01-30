@@ -29,7 +29,6 @@
 	var current_objects;
 
 	$('#searchField').keyup(function(e) {
-		alert('kill bitches');
 		clearTimeout($.data(this, 'timer'));
 		if (e.keyCode == 13) {
 			search(true);
@@ -57,7 +56,7 @@
 
 	function search(force) {
 		var existingString = $("#searchField").val();
-		if (force && existingString.length > 2){
+		if (force && existingString.length > 1){
 			var searchURL = '/search/' + encodeURIComponent(existingString);
 			$.ajax({
 				url: searchURL,
